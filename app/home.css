@@ -1,0 +1,1096 @@
+:root {
+  --vk-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.42'/%3E%3C/svg%3E");
+}
+
+@keyframes vk-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------- the elevator ---------- */
+
+.vk-home-elevator {
+  /* In flow (not absolute): an absolutely positioned car would resolve
+     against the center's padding box and slide under the activity rail the
+     `.vk-app-center` end padding exists to clear. */
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.9s cubic-bezier(0.22, 0.8, 0.22, 1);
+  will-change: transform;
+}
+.vk-home-elevator[data-level='2'] {
+  transform: translateY(-100%);
+}
+@media (prefers-reduced-motion: reduce) {
+  /* The OS preference, unless the person explicitly asked for full motion. */
+  :root:not([data-motion='full']) {
+    .vk-home-elevator {
+      transition: none;
+    }
+  }
+}
+
+/* Each level keeps `.vk-app-level`'s padding/scroll behaviour and adds the
+   fixed 100% height the stacked-levels layout needs. */
+.vk-home-level {
+  height: 100%;
+  flex: none;
+}
+.vk-home-level-2 {
+  padding-top: 20px;
+}
+
+.vk-hero-spacer {
+  display: block;
+  height: calc(68px + 1.02 * clamp(30px, 3.5vw, 50px));
+  flex: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* ---------- portal hero ---------- */
+
+.vk-hero {
+  position: relative;
+  display: flex;
+  height: min(430px, 52vh);
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  margin: 14px 0 0;
+}
+.vk-portal {
+  position: relative;
+  display: flex;
+  width: min(440px, 46vh);
+  aspect-ratio: 1;
+  align-items: center;
+  justify-content: center;
+}
+.vk-swirl {
+  position: absolute;
+  top: -30%;
+  left: -30%;
+  width: 160%;
+  height: 160%;
+}
+.vk-ring {
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(242, 193, 78, 0.24);
+  border-radius: 50%;
+  box-shadow:
+    0 0 24px -6px rgba(242, 193, 78, 0.18),
+    inset 0 0 30px -8px rgba(242, 193, 78, 0.14);
+}
+/* slow volumetric light sweep across the gateway */
+.vk-psweep {
+  position: absolute;
+  inset: 2%;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    color-mix(in srgb, var(--vk-mood) 22%, transparent) 40deg,
+    transparent 90deg,
+    transparent 220deg,
+    color-mix(in srgb, var(--vk-mood) 12%, transparent) 260deg,
+    transparent 320deg
+  );
+  animation: vk-spin 34s linear infinite;
+  mask: radial-gradient(
+    circle,
+    transparent 30%,
+    #000 46%,
+    #000 60%,
+    transparent 74%
+  );
+  opacity: 0.6;
+  pointer-events: none;
+  transition: background 0.8s ease;
+}
+.vk-pcore {
+  position: absolute;
+  inset: 24%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 50% 44%,
+    rgba(255, 250, 236, 0.98),
+    rgba(246, 212, 136, 0.72) 20%,
+    rgba(226, 166, 74, 0.34) 42%,
+    rgba(120, 86, 32, 0.14) 60%,
+    rgba(249, 248, 242, 0) 74%
+  );
+  box-shadow:
+    0 0 120px 16px rgba(242, 193, 78, 0.3),
+    0 0 46px 4px rgba(246, 212, 136, 0.28),
+    inset 0 0 64px rgba(242, 193, 78, 0.42);
+  transition:
+    background 0.8s ease,
+    box-shadow 0.8s ease;
+}
+.vk-pglow {
+  position: absolute;
+  inset: -24%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(242, 193, 78, 0.16),
+    rgba(242, 193, 78, 0.05) 42%,
+    transparent 66%
+  );
+  transition: background 0.8s ease;
+}
+/* warm rim backlight directly behind the figure */
+.vk-pbacklight {
+  position: absolute;
+  bottom: 2%;
+  left: 50%;
+  z-index: 4;
+  width: 44%;
+  height: 82%;
+  background: radial-gradient(
+    46% 60% at 50% 46%,
+    color-mix(in srgb, var(--vk-mood) 55%, #579879),
+    transparent 68%
+  );
+  filter: blur(6px);
+  opacity: 0.5;
+  pointer-events: none;
+  transform: translateX(-50%);
+  transition: background 0.8s ease;
+}
+.vk-silhouette {
+  position: absolute;
+  bottom: -6%;
+  left: 50%;
+  z-index: 5;
+  width: auto;
+  height: 74%;
+  filter: drop-shadow(0 18px 34px rgba(249, 248, 242, 0.7))
+    drop-shadow(0 0 22px rgba(242, 193, 78, 0.18));
+  transform: translateX(-50%);
+}
+@media (prefers-reduced-motion: reduce) {
+  /* The OS preference, unless the person explicitly asked for full motion. */
+  :root:not([data-motion='full']) {
+    .vk-psweep,
+    .vk-ring {
+      animation: none !important;
+    }
+  }
+}
+
+/* ---------- General Conversation (below the portal) ---------- */
+
+.vk-genconv {
+  width: min(1040px, calc(100% - 8px));
+  flex: none;
+  margin: 44px auto 0;
+  text-align: center;
+}
+.vk-gc-title {
+  color: #243b32;
+  font-size: clamp(24px, 2.6vw, 34px);
+  font-weight: 300;
+  letter-spacing: -0.02em;
+}
+.vk-gc-title b {
+  font-weight: 600;
+}
+.vk-gc-sub {
+  max-width: 52ch;
+  margin: 10px auto 0;
+  color: #5b6d63;
+  font-size: 14px;
+  line-height: 1.55;
+}
+/* full-size chat box + Explore (elevator) button to its right; the button
+   wraps below when there is no room. */
+.vk-gc-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  margin-top: 22px;
+}
+.vk-gc-field {
+  display: flex;
+  width: min(720px, 100%);
+  flex: 0 1 auto;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(150, 178, 205, 0.14);
+  border-radius: 16px;
+  padding: 8px 8px 8px 14px;
+  background: linear-gradient(
+    180deg,
+    rgba(249, 248, 242, 0.78),
+    rgba(249, 248, 242, 0.8)
+  );
+  backdrop-filter: blur(14px);
+  box-shadow:
+    0 26px 70px -32px rgba(249, 248, 242, 0.92),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  transition:
+    border-color 0.45s ease,
+    box-shadow 0.45s ease;
+}
+.vk-gc-field:focus-within {
+  border-color: rgba(232, 137, 46, 0.42);
+  box-shadow:
+    0 26px 80px -30px rgba(249, 248, 242, 0.95),
+    0 0 0 4px rgba(232, 137, 46, 0.07);
+}
+.vk-gc-ph {
+  position: relative;
+  min-height: 26px;
+  flex: 1;
+  text-align: left;
+}
+.vk-gc-ph textarea {
+  display: block;
+  width: 100%;
+  height: 26px;
+  max-height: 104px;
+  border: 0;
+  background: transparent;
+  color: #243b32;
+  font-family: var(--vk-font-sans);
+  font-size: 16.5px;
+  line-height: 26px;
+  outline: 0;
+  overflow-y: auto;
+  resize: none;
+  scrollbar-width: thin;
+}
+.vk-gc-rot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 26px;
+  /* One clipped line, always: the rotating prompt is decoration, and on
+     narrow viewports a wrapped one would paint past the field's border. */
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: #5b6d63;
+  /* Quieter than the typed text (16.5px): the example line is a hint, not
+     the prompt itself. */
+  font-size: 14px;
+  line-height: 26px;
+  pointer-events: none;
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s ease;
+}
+.vk-gc-ic {
+  display: flex;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(150, 178, 205, 0.12);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  color: #5b6d63;
+  cursor: pointer;
+  transition: 0.25s;
+}
+.vk-gc-ic:hover:not(:disabled) {
+  border-color: rgba(232, 137, 46, 0.35);
+  background: rgba(232, 137, 46, 0.06);
+  color: #243b32;
+}
+.vk-gc-ic:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+.vk-gc-ic svg {
+  width: 16px;
+  height: 16px;
+}
+.vk-gc-send {
+  display: flex;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 11px;
+  background: linear-gradient(150deg, #348568, #28765c);
+  box-shadow: 0 10px 26px -8px rgba(232, 137, 46, 0.5);
+  cursor: pointer;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+.vk-gc-send:hover:not(:disabled) {
+  box-shadow: 0 14px 32px -8px rgba(232, 137, 46, 0.62);
+  transform: translateY(-1px) scale(1.03);
+}
+.vk-gc-send:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+.vk-gc-send:focus-visible {
+  outline: 2px solid var(--vk-accent);
+  outline-offset: 3px;
+}
+.vk-gc-send svg {
+  width: 17px;
+  height: 17px;
+}
+.vk-gc-notices {
+  display: flex;
+  min-height: 20px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px 12px;
+  margin-top: 12px;
+  font-size: 13px;
+}
+.vk-gc-hint {
+  margin-top: 14px;
+  color: #5b6d63;
+  font-size: 12px;
+  letter-spacing: 0.01em;
+}
+
+/* the Explore Decision Worlds elevator button */
+.vk-explore-elevator {
+  display: inline-flex;
+  height: 58px;
+  flex: none;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid rgba(150, 178, 205, 0.14);
+  border-radius: 18px;
+  padding: 0 8px 0 18px;
+  background: linear-gradient(
+    180deg,
+    rgba(249, 248, 242, 0.72),
+    rgba(249, 248, 242, 0.75)
+  );
+  color: #243b32;
+  cursor: pointer;
+  font: 600 13.5px var(--vk-font-sans);
+  text-align: left;
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    background 0.25s ease;
+}
+.vk-explore-elevator:hover {
+  border-color: rgba(232, 137, 46, 0.4);
+  background: linear-gradient(
+    180deg,
+    rgba(249, 248, 242, 0.8),
+    rgba(249, 248, 242, 0.8)
+  );
+  box-shadow: 0 0 0 4px rgba(232, 137, 46, 0.06);
+}
+.vk-explore-elevator:focus-visible {
+  outline: 2px solid var(--vk-accent);
+  outline-offset: 3px;
+}
+.vk-explore-label {
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.vk-explore-arrow {
+  display: flex;
+  width: 42px;
+  height: 42px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: linear-gradient(150deg, #348568, #28765c);
+  box-shadow: 0 8px 20px -8px rgba(232, 137, 46, 0.5);
+  transition: transform 0.25s ease;
+}
+.vk-explore-arrow svg {
+  width: 18px;
+  height: 18px;
+}
+.vk-explore-elevator:hover .vk-explore-arrow {
+  transform: translateY(-2px);
+}
+@media (max-width: 700px) {
+  .vk-explore-elevator {
+    height: 52px;
+  }
+}
+@media (max-width: 480px) {
+  .vk-gc-action-row {
+    gap: 16px;
+  }
+}
+
+/* ---------- Level 2: "Back to Conversation" ---------- */
+
+.vk-lvl-nav {
+  display: flex;
+  flex: none;
+  justify-content: center;
+}
+.vk-lvl-nav-up {
+  margin: 2px 0 22px;
+}
+.vk-lvl-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid rgba(150, 178, 205, 0.16);
+  border-radius: 14px;
+  padding: 12px 22px;
+  background: rgba(255, 255, 255, 0.03);
+  color: #243b32;
+  cursor: pointer;
+  font: 700 13.5px var(--vk-font-sans);
+  transition:
+    border-color 0.25s,
+    background 0.25s,
+    transform 0.25s,
+    color 0.25s;
+}
+.vk-lvl-btn:hover {
+  border-color: rgba(232, 137, 46, 0.4);
+  background: rgba(232, 137, 46, 0.08);
+  color: #fff;
+  transform: translateY(-1px);
+}
+.vk-lvl-btn:focus-visible {
+  outline: 2px solid var(--vk-accent);
+  outline-offset: 3px;
+}
+.vk-lvl-btn svg {
+  width: 18px;
+  height: 18px;
+  color: var(--vk-gold-soft);
+}
+
+/* ---------- specialized search (top of Level 2) ---------- */
+
+.vk-spec {
+  position: relative;
+  width: min(720px, 94%);
+  flex: none;
+  margin: 8px auto 32px;
+}
+.vk-spec-title {
+  color: #243b32;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+.vk-spec-sub {
+  margin-top: 3px;
+  color: #5b6d63;
+  font-size: 12.5px;
+}
+.vk-spec-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+}
+.vk-spec-pull {
+  flex: none;
+}
+.vk-spec[data-open='1'] .vk-spec-pull {
+  display: none;
+}
+.vk-spec-track {
+  position: relative;
+  display: flex;
+  overflow: hidden;
+  width: 192px;
+  height: 42px;
+  align-items: center;
+  border: 1px solid rgba(150, 178, 205, 0.14);
+  border-radius: 24px;
+  background: rgba(249, 248, 242, 0.7);
+}
+.vk-spec-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  border-radius: 24px;
+  background: linear-gradient(
+    90deg,
+    rgba(232, 137, 46, 0.3),
+    rgba(242, 193, 78, 0.16)
+  );
+  pointer-events: none;
+}
+.vk-spec-handle {
+  position: absolute;
+  top: 50%;
+  left: 3px;
+  z-index: 2;
+  display: flex;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  background: linear-gradient(150deg, #348568, #28765c);
+  box-shadow: 0 6px 16px -6px rgba(232, 137, 46, 0.6);
+  color: #ffffff;
+  cursor: grab;
+  touch-action: none;
+  transform: translateY(-50%) translateX(0);
+}
+.vk-spec-handle[data-dragging] {
+  cursor: grabbing;
+  transition: none;
+}
+.vk-spec-handle:not([data-dragging]) {
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.vk-spec-handle svg {
+  width: 18px;
+  height: 18px;
+}
+.vk-spec-handle:focus-visible {
+  outline: 2px solid var(--vk-accent);
+  outline-offset: 3px;
+}
+.vk-spec-hint {
+  position: absolute;
+  right: 12px;
+  left: 50px;
+  color: #5b6d63;
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  pointer-events: none;
+  text-align: center;
+  white-space: nowrap;
+}
+@media (max-width: 640px) {
+  .vk-spec-track {
+    width: 178px;
+  }
+  .vk-spec-hint {
+    font-size: 9.5px;
+  }
+}
+.vk-spec-field-wrap {
+  display: none;
+}
+.vk-spec[data-open='1'] .vk-spec-field-wrap {
+  display: block;
+  animation: vk-spec-reveal 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes vk-spec-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.vk-spec-field {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  border: 1px solid rgba(150, 178, 205, 0.13);
+  border-radius: 15px;
+  margin-top: 12px;
+  padding: 14px 16px;
+  background: rgba(249, 248, 242, 0.7);
+  transition:
+    border-color 0.4s ease,
+    box-shadow 0.4s ease;
+}
+.vk-spec-field:focus-within {
+  border-color: rgba(242, 193, 78, 0.34);
+  box-shadow: 0 0 0 4px rgba(242, 193, 78, 0.05);
+}
+.vk-spec-field svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+.vk-spec-field input {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  color: #243b32;
+  font-family: var(--vk-font-sans);
+  font-size: 15px;
+  outline: 0;
+}
+.vk-spec-field input::placeholder {
+  color: #5b6d63;
+}
+.vk-spec-field .vk-kbd {
+  border: 1px solid rgba(140, 170, 200, 0.16);
+  border-radius: 6px;
+  padding: 4px 8px;
+  color: #5b6d63;
+  font-size: 11px;
+}
+.vk-spec-close {
+  display: flex;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(150, 178, 205, 0.16);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  color: #5b6d63;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.vk-spec-close:hover {
+  border-color: rgba(232, 137, 46, 0.4);
+  color: #fff;
+}
+.vk-spec-close:focus-visible {
+  outline: 2px solid var(--vk-accent);
+  outline-offset: 2px;
+}
+.vk-spec-close svg {
+  width: 14px;
+  height: 14px;
+}
+.vk-spec-results {
+  overflow: hidden;
+  max-height: 0;
+  border-radius: 14px;
+  margin-top: 8px;
+  transition: max-height 0.3s ease;
+}
+.vk-spec-results[data-show] {
+  overflow-y: auto;
+  max-height: 520px;
+  border: 1px solid rgba(150, 178, 205, 0.12);
+  background: rgba(249, 248, 242, 0.96);
+  box-shadow: 0 30px 70px -30px rgba(249, 248, 242, 0.9);
+}
+.vk-sr-group {
+  padding: 6px;
+}
+.vk-sr-phase {
+  padding: 10px 12px 6px;
+  color: #5b6d63;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.vk-sr-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  border-radius: 10px;
+  padding: 10px 12px;
+  transition: background 0.2s ease;
+}
+.vk-sr-item:hover,
+.vk-sr-item[data-kbd] {
+  background: rgba(120, 150, 180, 0.06);
+}
+.vk-sr-crumb {
+  min-width: 0;
+  flex: 1;
+}
+.vk-sr-lead {
+  color: #243b32;
+  font-size: 13.5px;
+}
+.vk-sr-path {
+  overflow: hidden;
+  margin-top: 2px;
+  color: #5b6d63;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.vk-sr-path b {
+  color: #243b32;
+  font-weight: 600;
+}
+.vk-sr-expert {
+  color: var(--vk-gold-soft);
+}
+.vk-sr-go {
+  flex: none;
+  color: #5b6d63;
+  font-size: 12px;
+}
+.vk-sr-empty {
+  padding: 20px;
+  color: #5b6d63;
+  font-size: 13px;
+  text-align: center;
+}
+
+/* ---------- Decision Worlds ---------- */
+
+.vk-wsec-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  flex: none;
+  margin: 8px 4px 16px;
+}
+.vk-wsec-title {
+  color: #243b32;
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.vk-wsec-sub {
+  margin-top: 4px;
+  color: #5b6d63;
+  font-size: 13px;
+}
+.vk-wsort {
+  display: inline-flex;
+  gap: 2px;
+  border: 1px solid rgba(150, 178, 205, 0.12);
+  border-radius: 10px;
+  padding: 3px;
+  background: rgba(255, 255, 255, 0.03);
+}
+.vk-wsort button {
+  border: 0;
+  border-radius: 8px;
+  padding: 6px 11px;
+  background: none;
+  color: #5b6d63;
+  cursor: pointer;
+  font: 600 11.5px var(--vk-font-sans);
+  transition: 0.2s;
+}
+.vk-wsort button:hover {
+  color: #243b32;
+}
+.vk-wsort button[data-on] {
+  background: linear-gradient(150deg, #348568, #28765c);
+  color: #ffffff;
+}
+
+.vk-wgrid {
+  display: grid;
+  flex: none;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+  perspective: 1200px;
+}
+@media (max-width: 1180px) {
+  .vk-wgrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (max-width: 760px) {
+  .vk-wgrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+.vk-wcard {
+  position: relative;
+  overflow: hidden;
+  height: 158px;
+  border: 1px solid rgba(150, 178, 205, 0.1);
+  border-radius: 16px;
+  padding: 0;
+  background: linear-gradient(155deg, #f4f3ee, #f6f4f1 62%, #f7f5f2);
+  box-shadow:
+    0 16px 34px -22px rgba(249, 248, 242, 0.85),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  font-family: var(--vk-font-sans);
+  text-align: left;
+  transition:
+    transform 0.45s cubic-bezier(0.19, 1, 0.22, 1),
+    box-shadow 0.5s ease,
+    border-color 0.5s ease;
+}
+.vk-wcard > * {
+  pointer-events: none;
+}
+.vk-wc-atmos {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      120% 90% at 82% 8%,
+      color-mix(in srgb, var(--c) 42%, transparent),
+      transparent 60%
+    ),
+    linear-gradient(
+      155deg,
+      rgba(249, 248, 242, 0.15),
+      rgba(249, 248, 242, 0.82)
+    );
+  opacity: 0.9;
+}
+.vk-wc-drift {
+  position: absolute;
+  inset: -40%;
+  background: radial-gradient(
+    32% 34% at 50% 50%,
+    color-mix(in srgb, var(--c) 60%, #fff 8%),
+    transparent 70%
+  );
+  animation: vk-wcdrift 11s ease-in-out infinite;
+  animation-delay: calc(var(--i, 0) * -1.35s);
+  mix-blend-mode: screen;
+  opacity: 0.55;
+}
+@keyframes vk-wcdrift {
+  0% {
+    transform: translate(-16%, -10%);
+  }
+  25% {
+    transform: translate(12%, -4%);
+  }
+  50% {
+    transform: translate(16%, 12%);
+  }
+  75% {
+    transform: translate(-8%, 8%);
+  }
+  100% {
+    transform: translate(-16%, -10%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  /* The OS preference, unless the person explicitly asked for full motion. */
+  :root:not([data-motion='full']) {
+    .vk-wc-drift {
+      animation: none;
+    }
+  }
+}
+.vk-wc-hover {
+  position: absolute;
+  inset: -20%;
+  background: radial-gradient(
+    26% 30% at var(--px, 50%) var(--py, 40%),
+    color-mix(in srgb, var(--c) 70%, #fff 14%),
+    transparent 62%
+  );
+  mix-blend-mode: screen;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.vk-wc-grain {
+  position: absolute;
+  inset: 0;
+  background-image: var(--vk-grain);
+  background-size: 150px 150px;
+  mix-blend-mode: overlay;
+  opacity: 0.4;
+}
+.vk-wc-emblem {
+  position: absolute;
+  top: 14px;
+  right: 15px;
+  width: 26px;
+  height: 26px;
+  color: color-mix(in srgb, var(--c) 66%, #fff);
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--c) 40%, transparent));
+  opacity: 0.7;
+  transition:
+    transform 0.5s ease,
+    opacity 0.4s ease;
+}
+.vk-wc-emblem svg {
+  width: 26px;
+  height: 26px;
+}
+.vk-wc-body {
+  position: absolute;
+  right: 16px;
+  bottom: 14px;
+  left: 16px;
+}
+.vk-wc-title {
+  display: block;
+  color: #243b32;
+  font-size: 16.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.05;
+}
+.vk-wc-desc {
+  display: -webkit-box;
+  overflow: hidden;
+  min-height: 2.6em;
+  margin-top: 5px;
+  -webkit-box-orient: vertical;
+  color: #243b32;
+  font-size: 11.5px;
+  font-weight: 300;
+  -webkit-line-clamp: 2;
+  line-height: 1.35;
+}
+.vk-wc-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+.vk-wc-meta {
+  color: #5b6d63;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.vk-wc-enter {
+  color: color-mix(in srgb, var(--c) 62%, #fff);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  opacity: 0;
+  text-transform: uppercase;
+  transform: translateX(-5px);
+  transition: 0.4s;
+}
+.vk-wcard:hover {
+  border-color: color-mix(in srgb, var(--c) 42%, transparent);
+  box-shadow:
+    0 30px 56px -28px rgba(249, 248, 242, 0.9),
+    0 0 46px -16px color-mix(in srgb, var(--c) 60%, transparent);
+  transform: translateY(-5px);
+}
+.vk-wcard:hover .vk-wc-hover {
+  opacity: 1;
+}
+.vk-wcard:hover .vk-wc-emblem {
+  opacity: 1;
+  transform: scale(1.08);
+}
+.vk-wcard:hover .vk-wc-enter {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  /* The OS preference, unless the person explicitly asked for full motion. */
+  :root:not([data-motion='full']) {
+    .vk-wcard,
+    .vk-wcard:hover {
+      transform: none;
+    }
+  }
+}
+
+/* ---------- dashboard sections ---------- */
+
+.vk-dash-sec {
+  flex: none;
+  margin-top: 30px;
+}
+.vk-dash-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0 4px 14px;
+}
+.vk-dash-head h3 {
+  color: #243b32;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.vk-dash-head::after {
+  content: '';
+  height: 1px;
+  flex: 1;
+  background: linear-gradient(90deg, rgba(140, 170, 200, 0.14), transparent);
+}
+.vk-dash-empty {
+  border: 1px dashed rgba(150, 178, 205, 0.16);
+  border-radius: 14px;
+  padding: 22px;
+  background: rgba(255, 255, 255, 0.012);
+  text-align: center;
+}
+.vk-dash-empty p {
+  margin-bottom: 12px;
+  color: #5b6d63;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.vk-dash-btn {
+  border: 1px solid rgba(150, 178, 205, 0.16);
+  border-radius: 10px;
+  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.02);
+  color: #243b32;
+  cursor: pointer;
+  font: 600 13px var(--vk-font-sans);
+  transition: 0.2s;
+}
+.vk-dash-btn:hover {
+  border-color: rgba(232, 137, 46, 0.4);
+  color: #fff;
+}
+.vk-dash-btn:focus-visible {
+  outline: 2px solid var(--vk-accent);
+  outline-offset: 2px;
+}
+.vk-dash-btn-primary {
+  border: 0;
+  background: linear-gradient(150deg, #348568, #28765c);
+  color: #ffffff;
+}
+
+/* ---------- Level 1 on short viewports ----------
+   The theme carries NO height compression: its own scaling (hero
+   min(430px, 52vh), portal min(440px, 46vh)) fits the level down to
+   ~915px, and below that the level simply scrolls (`overflow-y: auto`),
+   keeping the ceremony's proportions. A former 980px tier compressed the
+   spacer 119px → 40px here too — which is exactly what pushed the whole
+   hero ~100px above the theme's centered position on a normal desktop.
+   Only genuinely short viewports (where the theme would scroll by a full
+   screen-third) still compress. Last in the file: these overrides share
+   specificity with the base rules above and must win. */
+@media (max-height: 740px) {
+  .vk-hero-spacer {
+    height: 14px;
+  }
+  .vk-hero {
+    height: 36vh;
+  }
+  .vk-portal {
+    width: min(340px, 38vh);
+  }
+  .vk-genconv {
+    margin-top: 14px;
+  }
+  .vk-gc-sub {
+    margin-top: 6px;
+  }
+  .vk-gc-action-row {
+    margin-top: 14px;
+  }
+  .vk-gc-hint {
+    margin-top: 8px;
+  }
+}

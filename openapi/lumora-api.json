@@ -1,0 +1,892 @@
+{
+  "schemes": [],
+  "swagger": "2.0",
+  "info": {
+    "description": "Lumora backend REST API.",
+    "title": "Lumora API",
+    "contact": {},
+    "version": "1.0"
+  },
+  "host": "",
+  "basePath": "/api",
+  "paths": {
+    "/conversations": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Returns the authenticated user's conversations, most recently\nupdated first.",
+        "produces": ["application/json"],
+        "tags": ["chatbot"],
+        "summary": "List conversations",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Envelope"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/definitions/ConversationEntity"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/Envelope"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/Envelope"
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Opens a new shopping thread for the authenticated user and seeds it\nwith an opening greeting from the assistant. Title is optional — an\nempty title is derived from the first user message. The returned\nconversation includes the greeting as its first message.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["chatbot"],
+        "summary": "Create a conversation",
+        "parameters": [
+          {
+            "description": "Conversation options",
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/CreateConversationInput"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Envelope"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/ConversationEntity"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/Envelope"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/Envelope"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/Envelope"
+            }
+          }
+        }
+      }
+    },
+    "/conversations/start": {
+      "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "One-shot: creates a NEW conversation and runs the first user message\nthrough the shopping-assistant workflow in a single request, streaming\nprogress back as Server-Sent Events (text/event-stream). Unlike\nPOST /conversations it seeds NO greeting — the conversation starts with\nthe user's message and its reply.\n\nThe new conversation's id is delivered two ways so the client has it\nimmediately (and even if the turn later fails): the `X-Conversation-Id`\nresponse header, and a `conversation` SSE event\n({\"conversation_id\":\"...\",\"title\":\"...\"}) emitted before any stage runs.\nEvery other event is identical to POST /conversations/{id}/messages:\n`status`, `requirement`/`candidates`/`marketplace`/`research`/`recommendation`,\n`delta`, `done`, `error`. Consume it with fetch + ReadableStream.",
+        "consumes": ["application/json"],
+        "produces": ["text/event-stream"],
+        "tags": ["chatbot"],
+        "summary": "Create a conversation and stream its first message's reply (SSE)",
+        "parameters": [
+          {
+            "description": "First message (and optional title)",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/StartConversationInput"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "SSE stream",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/Envelope"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/Envelope"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/Envelope"
+            }
+          }
+        }
+      }
+    },
+    "/conversations/{id}": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Returns a single owned conversation and its full ordered message\nhistory.",
+        "produces": ["application/json"],
+        "tags": ["chatbot"],
+        "summary": "Get a conversation with its messages",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Conversation ID (UUID)",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Envelope"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/ConversationEntity"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/Envelope"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/Envelope"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/Envelope"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/Envelope"
+            }
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Soft-deletes an owned conversation and its messages.",
+        "produces": ["application/json"],
+        "tags": ["chatbot"],
+        "summary": "Delete a conversation",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Conversation ID (UUID)",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/Envelope"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/Envelope"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/Envelope"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/Envelope"
+            }
+          }
+        }
+      }
+    },
+    "/conversations/{id}/messages": {
+      "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Posts a user message and runs the shopping-assistant workflow,\nstreaming progress back as Server-Sent Events (text/event-stream).\n\nThe workflow is interactive and pauses twice. While the requirement is\nincomplete it asks at most 3 questions per turn (a `requirement` event\ncarries the profile, readiness and those questions with example answers,\nso a client can render answer chips) and does not search. Once complete\nit discovers candidates and STOPS: it will not compare prices until the\nuser picks products — either in the message text (\"the first two\") or via\nthe `selected_products` array on this request.\n\n\nEvery stage is bracketed by a `status` event\n({\"stage\":\"...\",\"state\":\"started|completed\",\"message\":\"...\"}), so the UI\nalways knows what is running and when to clear its loading indicator.\nStages: `understanding` (routing + category detection), `requirement`\n(extracting answers), `selection` (resolving the product pick),\n`discovery`, `marketplace`, `research`, `recommendation`, and `response`\n(which starts just before the first `delta` and completes when the reply\nis fully streamed). A turn only runs the stages its branch needs, so drive\nthe UI off the events received rather than a fixed sequence. A failing\nstage emits `started` with no `completed`, followed by `error`.\n\nOther event types: `requirement`, `candidates`, `marketplace`, `research`,\n`recommendation` each carrying that stage's complete structured object;\n`delta` for each token of the assistant's prose; `done` at the end;\n`error` on mid-stream failure. Consume it with fetch + ReadableStream (a\nrequest body rules out EventSource). The user turn, each structured stage,\nand the final reply are persisted.",
+        "consumes": ["application/json"],
+        "produces": ["text/event-stream"],
+        "tags": ["chatbot"],
+        "summary": "Send a message and stream the shopping-assistant reply (SSE)",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Conversation ID (UUID)",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "User message",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SendMessageInput"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "SSE stream",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/Envelope"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/Envelope"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/Envelope"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/Envelope"
+            }
+          }
+        }
+      }
+    },
+    "/health/check": {
+      "get": {
+        "description": "DB-free liveness check that always reports status true.",
+        "produces": ["application/json"],
+        "tags": ["health"],
+        "summary": "Liveness probe",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/status": {
+      "get": {
+        "description": "Reports per-dependency health plus service metadata. Always returns 200; the per-dependency booleans carry the health signal.",
+        "produces": ["application/json"],
+        "tags": ["health"],
+        "summary": "Readiness / dependency status",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        }
+      }
+    },
+    "/me": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Returns the caller's profile, creating and linking it to their\nSupabase identity on first call. Clients should call this once\nafter login to provision their local user row.",
+        "produces": ["application/json"],
+        "tags": ["users"],
+        "summary": "Get or provision the authenticated user",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Envelope"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/UserEntity"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/Envelope"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/Envelope"
+            }
+          }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Admin only. Requires a Bearer token whose user has the admin role.",
+        "produces": ["application/json"],
+        "tags": ["users"],
+        "summary": "List users (admin)",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Envelope"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/definitions/UserEntity"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/Envelope"
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "schema": {
+              "$ref": "#/definitions/Envelope"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/Envelope"
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Admin only. Requires a Bearer token whose user has the admin role.",
+        "produces": ["application/json"],
+        "tags": ["users"],
+        "summary": "Get a user by ID (admin)",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "User ID (UUID)",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Envelope"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/UserEntity"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/Envelope"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/Envelope"
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "schema": {
+              "$ref": "#/definitions/Envelope"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/Envelope"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/Envelope"
+            }
+          }
+        }
+      }
+    },
+    "/me/preferences": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "tags": ["users"],
+        "summary": "Get the caller's UI preferences",
+        "description": "Account-scoped UI preferences. A user who has never saved one gets the documented defaults, not a 404 — having no preferences is a valid state.",
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Envelope"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/Preferences"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/Envelope"
+            }
+          }
+        }
+      },
+      "patch": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "tags": ["users"],
+        "summary": "Update the caller's UI preferences",
+        "description": "Partial update. theme accepts only 'dark' and language only en|fa|ar; anything else is refused with 400 naming the field rather than coerced.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "description": "Fields to change",
+            "schema": {
+              "$ref": "#/definitions/PreferencesPatch"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Envelope"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/Preferences"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/Envelope"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/Envelope"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "ConversationEntity": {
+      "type": "object",
+      "properties": {
+        "created_at": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "messages": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/MessageEntity"
+          }
+        },
+        "title": {
+          "type": "string"
+        },
+        "updated_at": {
+          "type": "string"
+        },
+        "user_id": {
+          "type": "string"
+        }
+      }
+    },
+    "CreateConversationInput": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        }
+      }
+    },
+    "Envelope": {
+      "type": "object",
+      "properties": {
+        "data": {},
+        "error": {
+          "type": "string"
+        },
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
+    "MessageEntity": {
+      "type": "object",
+      "properties": {
+        "ai_request_id": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "conversation_id": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/definitions/MessageKind"
+        },
+        "payload": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "role": {
+          "$ref": "#/definitions/Role"
+        },
+        "updated_at": {
+          "type": "string"
+        }
+      }
+    },
+    "MessageKind": {
+      "type": "string",
+      "enum": [
+        "text",
+        "requirement",
+        "candidates",
+        "marketplace",
+        "research",
+        "recommendation"
+      ],
+      "x-enum-varnames": [
+        "KindText",
+        "KindRequirement",
+        "KindCandidates",
+        "KindMarketplace",
+        "KindResearch",
+        "KindRecommendation"
+      ]
+    },
+    "Role": {
+      "type": "string",
+      "enum": ["user", "admin"],
+      "x-enum-varnames": ["RoleUser", "RoleAdmin"]
+    },
+    "SendMessageInput": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "string"
+        },
+        "selected_products": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "StartConversationInput": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "string"
+        },
+        "selected_products": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "title": {
+          "type": "string"
+        }
+      }
+    },
+    "UserEntity": {
+      "type": "object",
+      "properties": {
+        "avatar_url": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "email_verified": {
+          "type": "boolean"
+        },
+        "first_name": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "last_name": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "phone_verified": {
+          "type": "boolean"
+        },
+        "role": {
+          "$ref": "#/definitions/Role"
+        },
+        "supabase_id": {
+          "type": "string"
+        },
+        "updated_at": {
+          "type": "string"
+        }
+      }
+    },
+    "Preferences": {
+      "type": "object",
+      "description": "Account-scoped UI settings. They follow the person, not the browser.",
+      "required": ["theme", "language", "sidebarCollapsed", "_v"],
+      "properties": {
+        "theme": {
+          "type": "string",
+          "enum": ["dark"],
+          "description": "The only theme the frozen design defines."
+        },
+        "language": {
+          "type": "string",
+          "enum": ["en", "fa", "ar"]
+        },
+        "sidebarCollapsed": {
+          "type": "boolean"
+        },
+        "reducedMotionOverride": {
+          "type": "boolean",
+          "x-nullable": true,
+          "description": "null means no preference expressed — follow the operating system. Distinct from an explicit false."
+        },
+        "_v": {
+          "type": "integer",
+          "description": "The CLIENT's storage-migration counter. Persisted and returned untouched; never interpreted by the server."
+        }
+      }
+    },
+    "PreferencesPatch": {
+      "type": "object",
+      "description": "Partial update. An omitted field is left as stored; reducedMotionOverride sent explicitly as null clears it to 'follow the OS'.",
+      "properties": {
+        "theme": {
+          "type": "string",
+          "enum": ["dark"]
+        },
+        "language": {
+          "type": "string",
+          "enum": ["en", "fa", "ar"]
+        },
+        "sidebarCollapsed": {
+          "type": "boolean"
+        },
+        "reducedMotionOverride": {
+          "type": "boolean",
+          "x-nullable": true
+        },
+        "_v": {
+          "type": "integer"
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "BearerAuth": {
+      "description": "Supabase access token as \"Bearer <token>\".",
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header"
+    }
+  }
+}
